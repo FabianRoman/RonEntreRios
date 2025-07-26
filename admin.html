@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard Admin - Ron Entre Ríos</title>
+  <link rel="stylesheet" href="admin-style.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+</head>
+<body>
+  <div class="admin-container">
+    <!-- Header -->
+    <header class="admin-header">
+      <div class="header-content">
+        <h1>📊 Dashboard Administrador</h1>
+        <p>Ron Entre Ríos - Análisis de Evaluaciones</p>
+        <div class="header-actions">
+          <button id="refreshBtn" class="refresh-btn">🔄 Actualizar Datos</button>
+          <button id="exportBtn" class="export-btn">📥 Exportar CSV</button>
+        </div>
+      </div>
+    </header>
+
+    <!-- Loading State -->
+    <div id="loadingState" class="loading-state">
+      <div class="spinner"></div>
+      <p>Cargando datos...</p>
+    </div>
+
+    <!-- Error State -->
+    <div id="errorState" class="error-state" style="display: none;">
+      <div class="error-icon">⚠️</div>
+      <h3>Error al cargar los datos</h3>
+      <p id="errorMessage">No se pudieron obtener las evaluaciones.</p>
+      <button onclick="loadData()" class="retry-btn">Reintentar</button>
+    </div>
+
+    <!-- Main Dashboard -->
+    <main id="dashboard" class="dashboard" style="display: none;">
+      
+      <!-- Summary Cards -->
+      <section class="summary-section">
+        <div class="summary-card">
+          <div class="card-icon">📋</div>
+          <div class="card-content">
+            <h3 id="totalResponses">0</h3>
+            <p>Total Evaluaciones</p>
+          </div>
+        </div>
+        
+        <div class="summary-card">
+          <div class="card-icon">⭐</div>
+          <div class="card-content">
+            <h3 id="avgRating">0.0</h3>
+            <p>Promedio General</p>
+          </div>
+        </div>
+        
+        <div class="summary-card">
+          <div class="card-icon">📅</div>
+          <div class="card-content">
+            <h3 id="todayResponses">0</h3>
+            <p>Hoy</p>
+          </div>
+        </div>
+        
+        <div class="summary-card">
+          <div class="card-icon">🎯</div>
+          <div class="card-content">
+            <h3 id="completionRate">0%</h3>
+            <p>Con Notas</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- Charts Section -->
+      <section class="charts-section">
+        
+        <!-- Sensory Evaluation Charts -->
+        <div class="chart-container">
+          <div class="chart-header">
+            <h2>📊 Evaluación Sensorial</h2>
+            <p>Distribución de calificaciones por categoría</p>
+          </div>
+          <div class="chart-wrapper">
+            <canvas id="sensoryChart"></canvas>
+          </div>
+        </div>
+
+        <!-- Average Scores Chart -->
+        <div class="chart-container">
+          <div class="chart-header">
+            <h2>📈 Promedios por Categoría</h2>
+            <p>Puntuación promedio de cada aspecto sensorial</p>
+          </div>
+          <div class="chart-wrapper">
+            <canvas id="averageChart"></canvas>
+          </div>
+        </div>
+
+        <!-- User Profile Charts -->
+        <div class="chart-row">
+          <div class="chart-container half">
+            <div class="chart-header">
+              <h2>🥃 Experiencia con Ron Artesanal</h2>
+            </div>
+            <div class="chart-wrapper">
+              <canvas id="artesanalChart"></canvas>
+            </div>
+          </div>
+
+          <div class="chart-container half">
+            <div class="chart-header">
+              <h2>🍹 Consumidores Habituales</h2>
+            </div>
+            <div class="chart-wrapper">
+              <canvas id="habitualChart"></canvas>
+            </div>
+          </div>
+        </div>
+
+        <!-- Preferences Chart -->
+        <div class="chart-container">
+          <div class="chart-header">
+            <h2>🎯 Preferencias de Sabor</h2>
+            <p>Distribución de preferencias de los catadores</p>
+          </div>
+          <div class="chart-wrapper">
+            <canvas id="preferencesChart"></canvas>
+          </div>
+        </div>
+
+        <!-- Time Series Chart -->
+        <div class="chart-container">
+          <div class="chart-header">
+            <h2>📅 Evaluaciones por Fecha</h2>
+            <p>Tendencia de evaluaciones a lo largo del tiempo</p>
+          </div>
+          <div class="chart-wrapper">
+            <canvas id="timeSeriesChart"></canvas>
+          </div>
+        </div>
+
+      </section>
+
+      <!-- Data Table Section -->
+      <section class="table-section">
+        <div class="table-header">
+          <h2>📝 Últimas Evaluaciones</h2>
+          <div class="table-controls">
+            <input type="text" id="searchInput" placeholder="🔍 Buscar en notas..." class="search-input">
+            <select id="filterSelect" class="filter-select">
+              <option value="all">Todas las evaluaciones</option>
+              <option value="today">Solo hoy</option>
+              <option value="week">Esta semana</option>
+              <option value="with-notes">Con notas</option>
+            </select>
+          </div>
+        </div>
+        <div class="table-wrapper">
+          <table id="dataTable" class="data-table">
+            <thead>
+              <tr>
+                <th>Fecha</th>
+                <th>Color</th>
+                <th>Aroma I.</th>
+                <th>Aromas B.</th>
+                <th>Sabor E.</th>
+                <th>Sabor R.</th>
+                <th>Persist.</th>
+                <th>Notas</th>
+                <th>Artesanal</th>
+                <th>Habitual</th>
+                <th>Preferencia</th>
+              </tr>
+            </thead>
+            <tbody id="tableBody">
+              <!-- Data will be populated by JavaScript -->
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="admin-footer">
+      <p>© 2025 Cervecería del Valle Sinú - Dashboard Administrativo</p>
+      <p>Última actualización: <span id="lastUpdate">--</span></p>
+    </footer>
+
+  </div>
+
+  <script src="admin-script.js"></script>
+</body>
+</html>

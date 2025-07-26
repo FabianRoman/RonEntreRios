@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Evaluación - Ron Entre Ríos</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>Ron Entre Ríos</h1>
+      <p class="subtitle">Evaluación Sensorial Artesanal</p>
+      <img src="RonEntreRios.png" alt="Logo Ron Entre Ríos" class="ron-logo">
+    </div>
+
+    <!-- IMPORTANTE: Agregué el id="formulario" que faltaba -->
+    <form id="formulario">
+      <div class="section">
+        <h2><span class="section-icon">👃</span> Escala Sensorial</h2>
+        
+        <div class="slider-group">
+          <div class="slider-label">Color</div>
+          <div class="slider-container">
+            <div class="slider-labels">
+              <span>🔹 Muy claro</span>
+              <span>🔸 Claro</span>
+              <span>🔸 Medio</span>
+              <span>🔸 Intenso</span>
+              <span>🔹 Muy intenso</span>
+            </div>
+            <input type="range" min="1" max="5" value="3" class="slider" id="color">
+            <div class="slider-value" id="colorValue">3</div>
+          </div>
+        </div>
+
+        <div class="slider-group">
+          <div class="slider-label">Aroma Inicial</div>
+          <div class="slider-container">
+            <div class="slider-labels">
+              <span>🔹 Muy débil</span>
+              <span>🔸 Débil</span>
+              <span>🔸 Medio</span>
+              <span>🔸 Intenso</span>
+              <span>🔹 Muy intenso</span>
+            </div>
+            <input type="range" min="1" max="5" value="3" class="slider" id="aromaInicial">
+            <div class="slider-value" id="aromaInicialValue">3</div>
+          </div>
+        </div>
+
+        <div class="slider-group">
+          <div class="slider-label">Aromas en boca</div>
+          <div class="slider-container">
+            <div class="slider-labels">
+              <span>🔹 Muy débil</span>
+              <span>🔸 Débil</span>
+              <span>🔸 Medio</span>
+              <span>🔸 Intenso</span>
+              <span>🔹 Muy intenso</span>
+            </div>
+            <input type="range" min="1" max="5" value="3" class="slider" id="aromasBoca">
+            <div class="slider-value" id="aromasBocaValue">3</div>
+          </div>
+        </div>
+
+        <div class="slider-group">
+          <div class="slider-label">Sabor en entrada</div>
+          <div class="slider-container">
+            <div class="slider-labels">
+              <span>🔹 Muy débil</span>
+              <span>🔸 Débil</span>
+              <span>🔸 Medio</span>
+              <span>🔸 Intenso</span>
+              <span>🔹 Muy intenso</span>
+            </div>
+            <input type="range" min="1" max="5" value="3" class="slider" id="saborEntrada">
+            <div class="slider-value" id="saborEntradaValue">3</div>
+          </div>
+        </div>
+
+        <div class="slider-group">
+          <div class="slider-label">Sabor en retrogusto</div>
+          <div class="slider-container">
+            <div class="slider-labels">
+              <span>🔹 Muy débil</span>
+              <span>🔸 Débil</span>
+              <span>🔸 Medio</span>
+              <span>🔸 Intenso</span>
+              <span>🔹 Muy intenso</span>
+            </div>
+            <input type="range" min="1" max="5" value="3" class="slider" id="saborRetrogusto">
+            <div class="slider-value" id="saborRetrogustoValue">3</div>
+          </div>
+        </div>
+
+        <div class="slider-group">
+          <div class="slider-label">Persistencia / Duración del sabor</div>
+          <div class="slider-container">
+            <div class="slider-labels">
+              <span>🔹 Muy corta</span>
+              <span>🔸 Corta</span>
+              <span>🔸 Media</span>
+              <span>🔸 Larga</span>
+              <span>🔹 Muy larga</span>
+            </div>
+            <input type="range" min="1" max="5" value="3" class="slider" id="persistencia">
+            <div class="slider-value" id="persistenciaValue">3</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="section">
+        <h2><span class="section-icon">📝</span> Notas del Catador</h2>
+        <div class="notes-container">
+          <textarea class="notes-textarea" id="notas" placeholder="👉 ¿Qué te ha parecido este ron? Describe lo que más te ha gustado o no te ha gustado..."></textarea>
+        </div>
+      </div>
+
+      <div class="section">
+        <h2><span class="section-icon">🎯</span> Perfil del Usuario</h2>
+        <p style="color: var(--light-text); margin-bottom: 2rem; font-style: italic;">(Opcional para estadísticas)</p>
+        
+        <div class="profile-question">
+          <div class="question-label">¿Has probado ron artesanal antes?</div>
+          <div class="radio-group">
+            <label class="radio-option">
+              <input type="radio" name="artesanal" value="Si">
+              <span class="radio-label">✅ Sí</span>
+            </label>
+            <label class="radio-option">
+              <input type="radio" name="artesanal" value="No">
+              <span class="radio-label">❌ No</span>
+            </label>
+          </div>
+        </div>
+
+        <div class="profile-question">
+          <div class="question-label">¿Eres consumidor habitual de ron?</div>
+          <div class="radio-group">
+            <label class="radio-option">
+              <input type="radio" name="habitual" value="Si">
+              <span class="radio-label">✅ Sí</span>
+            </label>
+            <label class="radio-option">
+              <input type="radio" name="habitual" value="No">
+              <span class="radio-label">❌ No</span>
+            </label>
+          </div>
+        </div>
+
+        <div class="profile-question">
+          <div class="question-label">¿Prefieres rones dulces, secos o especiados?</div>
+          <div class="select-container">
+            <select class="custom-select" id="preferencia">
+              <option value="">Selecciona tu preferencia...</option>
+              <option value="Dulce">🍯 Dulce</option>
+              <option value="Seco">🥃 Seco</option>
+              <option value="Especiado">🌶️ Especiado</option>
+              <option value="Indiferente">🤷‍♂️ No sé / Me es indiferente</option>
+            </select>
+            <span class="select-arrow">▼</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Cambié el botón para que sea tipo submit en lugar de onclick -->
+      <button type="submit" class="submit-btn" id="submitBtn">
+        Enviar Evaluación
+      </button>
+    </form>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
