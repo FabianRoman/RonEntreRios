@@ -1,6 +1,11 @@
-// Ron Entre Ríos - Script optimizado para móviles
+// Ron Entre Ríos - Script optimizado para móviles (SIN BUGS DE SCROLL)
 // Detectar si es dispositivo móvil
 const isMobile = () => window.innerWidth <= 768 || 'ontouchstart' in window;
+
+// Variables globales para controlar scroll
+let isTextareaFocused = false;
+let originalScrollY = 0;
+let preventScrollReset = false;
 
 // Update slider values in real time
 const sliders = document.querySelectorAll('.slider');
@@ -169,15 +174,13 @@ document.addEventListener('DOMContentLoaded', function() {
         
         const response = await fetch(url, {
           method: 'POST',
-          mode: 'no-cors', // Importante para Apps Script
+          mode: 'no-cors',
           headers: {
             'Content-Type': 'application/json',
           },
           body: JSON.stringify(data)
         });
 
-        // Como usamos no-cors, no podemos leer la respuesta
-        // Pero si llegamos aquí sin error, asumimos que fue exitoso
         console.log('Respuesta enviada');
         
         // Mostrar mensaje de éxito
@@ -234,51 +237,52 @@ document.addEventListener('DOMContentLoaded', function() {
   initializeAccessibilityFeatures();
 });
 
-// Características específicas para móviles
+// Características específicas para móviles - CORREGIDO
 function initializeMobileFeatures() {
-  // Prevenir zoom en inputs (problemático en algunos móviles)
-  const metaViewport = document.querySelector('meta[name="viewport"]');
-  if (metaViewport) {
-    metaViewport.setAttribute('content', 'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no');
-  }
+  // NO modificar el viewport de manera tan restrictiva
+  // Esto podría estar causando problemas
   
-  // Manejo especial del textarea en móviles
+  // Manejo CORREGIDO del textarea en móviles
   const textarea = document.getElementById('notas');
   if (textarea) {
-    let isKeyboardOpen = false;
     
     textarea.addEventListener('focus', function() {
-      isKeyboardOpen = true;
-      // Dar tiempo para que se abra el teclado virtual
+      isTextareaFocused = true;
+      originalScrollY = window.scrollY;
+      preventScrollReset = true;
+      
+      // Scroll más suave y controlado
       setTimeout(() => {
-        if (isKeyboardOpen) {
-          // Scroll suave sin interferir con el teclado virtual
+        if (isTextareaFocused) {
           const rect = this.getBoundingClientRect();
           const windowHeight = window.innerHeight;
           
-          if (rect.bottom > windowHeight * 0.5) {
-            const scrollAmount = rect.top - (windowHeight * 0.25);
-            window.scrollBy({
-              top: scrollAmount,
+          // Solo hacer scroll si realmente es necesario
+          if (rect.top < 50 || rect.bottom > windowHeight - 50) {
+            const targetY = window.scrollY + rect.top - (windowHeight * 0.3);
+            
+            window.scrollTo({
+              top: Math.max(0, targetY),
               behavior: 'smooth'
             });
           }
         }
-      }, 300);
+      }, 150); // Reducido el tiempo de espera
     });
     
     textarea.addEventListener('blur', function() {
-      isKeyboardOpen = false;
-      // Pequeño delay para que se cierre el teclado
+      isTextareaFocused = false;
+      
+      // NO hacer scroll automático al perder foco
+      // Esto era una de las causas principales del problema
       setTimeout(() => {
-        if (!isKeyboardOpen) {
-          // Restaurar scroll si es necesario
-          window.scrollTo({
-            top: Math.max(0, window.scrollY - 100),
-            behavior: 'smooth'
-          });
-        }
-      }, 100);
+        preventScrollReset = false;
+      }, 300);
+    });
+    
+    // Prevenir scroll no deseado en cambios de input
+    textarea.addEventListener('input', function(e) {
+      e.stopPropagation();
     });
   }
   
@@ -287,6 +291,16 @@ function initializeMobileFeatures() {
     el.style.opacity = '1';
     el.style.transform = 'translateY(0)';
   });
+  
+  // Prevenir scroll accidental en iOS
+  document.addEventListener('touchmove', function(e) {
+    if (isTextareaFocused && e.target !== textarea) {
+      // Solo prevenir si no es el textarea que está siendo usado
+      if (!e.target.closest('#notas')) {
+        e.preventDefault();
+      }
+    }
+  }, { passive: false });
 }
 
 // Características específicas para desktop
@@ -473,21 +487,20 @@ function addSkipLink() {
   }
 }
 
-// Manejar cambios de orientación (optimizado para móviles)
+// Manejar cambios de orientación - CORREGIDO
 function handleOrientationChange() {
-  if (isMobile()) {
-    // En móviles, manejar con más cuidado
+  if (isMobile() && !preventScrollReset) {
+    // Comportamiento más conservador en móviles
     setTimeout(() => {
-      // No hacer scroll automático que puede interferir con el usuario
-      // Solo recalcular posiciones de sliders si es necesario
+      // Solo actualizar valores de sliders, NO hacer scroll
       sliders.forEach(slider => {
         const valueDisplay = document.getElementById(slider.id + 'Value');
         if (valueDisplay) {
           valueDisplay.textContent = slider.value;
         }
       });
-    }, 100);
-  } else {
+    }, 200);
+  } else if (!isMobile()) {
     // En desktop, comportamiento normal
     setTimeout(() => {
       sliders.forEach(slider => {
@@ -497,9 +510,31 @@ function handleOrientationChange() {
   }
 }
 
-// Event listeners para cambios de orientación
+// Event listeners para cambios de orientación - CORREGIDO
 window.addEventListener('orientationchange', handleOrientationChange);
-window.addEventListener('resize', debounce(handleOrientationChange, 250));
+window.addEventListener('resize', debounce(handleOrientationChange, 300));
+
+// Prevenir scroll automático no deseado en móviles
+if (isMobile()) {
+  // Interceptar intentos de scroll automático problemáticos
+  let isScrolling = false;
+  
+  window.addEventListener('scroll', function() {
+    if (!isScrolling && !isTextareaFocused && !preventScrollReset) {
+      isScrolling = true;
+      setTimeout(() => {
+        isScrolling = false;
+      }, 100);
+    }
+  }, { passive: true });
+  
+  // Prevenir scroll a la parte superior por defecto en algunos eventos
+  document.addEventListener('focusin', function(e) {
+    if (e.target.tagName !== 'TEXTAREA' && e.target.tagName !== 'INPUT') {
+      e.preventDefault();
+    }
+  });
+}
 
 // Función debounce para limitar frecuencia de eventos
 function debounce(func, wait) {
