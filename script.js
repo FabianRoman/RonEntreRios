@@ -1,29 +1,43 @@
+// Ron Entre Ríos - Script optimizado para móviles
+// Detectar si es dispositivo móvil
+const isMobile = () => window.innerWidth <= 768 || 'ontouchstart' in window;
+
 // Update slider values in real time
 const sliders = document.querySelectorAll('.slider');
 sliders.forEach(slider => {
   const valueDisplay = document.getElementById(slider.id + 'Value');
   
   slider.addEventListener('input', function() {
-    valueDisplay.textContent = this.value;
+    if (valueDisplay) {
+      valueDisplay.textContent = this.value;
+    }
   });
 });
 
-// Show message function
+// Show message function (optimizada)
 function showMessage(message, isError = false) {
+  // Remover mensajes existentes
+  const existingMessages = document.querySelectorAll('.message-container');
+  existingMessages.forEach(msg => msg.remove());
+  
   const messageDiv = document.createElement('div');
-  messageDiv.className = isError ? 'error-message' : 'success-message';
+  messageDiv.className = 'message-container';
   messageDiv.innerHTML = `
     <div style="
       position: fixed;
       top: 20px;
       right: 20px;
+      left: 20px;
+      max-width: 350px;
+      margin: 0 auto;
       background: ${isError ? 'linear-gradient(135deg, #dc3545, #c82333)' : 'linear-gradient(135deg, #28a745, #20c997)'};
       color: white;
       padding: 1rem 1.5rem;
       border-radius: 10px;
       box-shadow: 0 4px 12px ${isError ? 'rgba(220, 53, 69, 0.3)' : 'rgba(40, 167, 69, 0.3)'};
       z-index: 1000;
-      animation: slideIn 0.3s ease-out;
+      animation: messageSlideIn 0.3s ease-out;
+      text-align: center;
     ">
       ${message}
     </div>
@@ -34,13 +48,13 @@ function showMessage(message, isError = false) {
     const style = document.createElement('style');
     style.id = 'message-styles';
     style.textContent = `
-      @keyframes slideIn {
-        from { transform: translateX(100%); opacity: 0; }
-        to { transform: translateX(0); opacity: 1; }
+      @keyframes messageSlideIn {
+        from { transform: translateY(-100%); opacity: 0; }
+        to { transform: translateY(0); opacity: 1; }
       }
-      @keyframes slideOut {
-        from { transform: translateX(0); opacity: 1; }
-        to { transform: translateX(100%); opacity: 0; }
+      @keyframes messageSlideOut {
+        from { transform: translateY(0); opacity: 1; }
+        to { transform: translateY(-100%); opacity: 0; }
       }
     `;
     document.head.appendChild(style);
@@ -50,7 +64,7 @@ function showMessage(message, isError = false) {
   
   // Remove message after 4 seconds
   setTimeout(() => {
-    messageDiv.firstElementChild.style.animation = 'slideOut 0.3s ease-in';
+    messageDiv.firstElementChild.style.animation = 'messageSlideOut 0.3s ease-in';
     setTimeout(() => {
       if (document.body.contains(messageDiv)) {
         document.body.removeChild(messageDiv);
@@ -124,16 +138,16 @@ document.addEventListener('DOMContentLoaded', function() {
       // Recopilar datos del formulario
       const data = {
         timestamp: new Date().toISOString(),
-        color: document.getElementById('color').value,
-        aromaInicial: document.getElementById('aromaInicial').value,
-        aromasBoca: document.getElementById('aromasBoca').value,
-        saborEntrada: document.getElementById('saborEntrada').value,
-        saborRetrogusto: document.getElementById('saborRetrogusto').value,
-        persistencia: document.getElementById('persistencia').value,
-        notas: document.getElementById('notas').value.trim(),
+        color: document.getElementById('color')?.value || '3',
+        aromaInicial: document.getElementById('aromaInicial')?.value || '3',
+        aromasBoca: document.getElementById('aromasBoca')?.value || '3',
+        saborEntrada: document.getElementById('saborEntrada')?.value || '3',
+        saborRetrogusto: document.getElementById('saborRetrogusto')?.value || '3',
+        persistencia: document.getElementById('persistencia')?.value || '3',
+        notas: document.getElementById('notas')?.value.trim() || '',
         artesanal: document.querySelector('input[name="artesanal"]:checked')?.value || 'No especificado',
         habitual: document.querySelector('input[name="habitual"]:checked')?.value || 'No especificado',
-        preferencia: document.getElementById('preferencia').value || 'No especificado'
+        preferencia: document.getElementById('preferencia')?.value || 'No especificado'
       };
 
       // Validación de notas
@@ -142,7 +156,7 @@ document.addEventListener('DOMContentLoaded', function() {
           // Restaurar botón
           submitBtn.textContent = originalText;
           submitBtn.disabled = false;
-          document.getElementById('notas').focus();
+          document.getElementById('notas')?.focus();
           return;
         }
       }
@@ -208,26 +222,91 @@ document.addEventListener('DOMContentLoaded', function() {
   const debouncedSave = debounce(saveFormData, 1000);
   document.addEventListener('input', debouncedSave);
   document.addEventListener('change', debouncedSave);
+  
+  // Inicializar características específicas para la plataforma
+  if (isMobile()) {
+    initializeMobileFeatures();
+  } else {
+    initializeDesktopFeatures();
+  }
+  
+  // Características universales
+  initializeAccessibilityFeatures();
 });
 
-// Add smooth animations on scroll
-const observerOptions = {
-  threshold: 0.1,
-  rootMargin: '0px 0px -50px 0px'
-};
-
-const observer = new IntersectionObserver((entries) => {
-  entries.forEach(entry => {
-    if (entry.isIntersecting) {
-      entry.target.style.opacity = '1';
-      entry.target.style.transform = 'translateY(0)';
-    }
+// Características específicas para móviles
+function initializeMobileFeatures() {
+  // Prevenir zoom en inputs (problemático en algunos móviles)
+  const metaViewport = document.querySelector('meta[name="viewport"]');
+  if (metaViewport) {
+    metaViewport.setAttribute('content', 'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no');
+  }
+  
+  // Manejo especial del textarea en móviles
+  const textarea = document.getElementById('notas');
+  if (textarea) {
+    let isKeyboardOpen = false;
+    
+    textarea.addEventListener('focus', function() {
+      isKeyboardOpen = true;
+      // Dar tiempo para que se abra el teclado virtual
+      setTimeout(() => {
+        if (isKeyboardOpen) {
+          // Scroll suave sin interferir con el teclado virtual
+          const rect = this.getBoundingClientRect();
+          const windowHeight = window.innerHeight;
+          
+          if (rect.bottom > windowHeight * 0.5) {
+            const scrollAmount = rect.top - (windowHeight * 0.25);
+            window.scrollBy({
+              top: scrollAmount,
+              behavior: 'smooth'
+            });
+          }
+        }
+      }, 300);
+    });
+    
+    textarea.addEventListener('blur', function() {
+      isKeyboardOpen = false;
+      // Pequeño delay para que se cierre el teclado
+      setTimeout(() => {
+        if (!isKeyboardOpen) {
+          // Restaurar scroll si es necesario
+          window.scrollTo({
+            top: Math.max(0, window.scrollY - 100),
+            behavior: 'smooth'
+          });
+        }
+      }, 100);
+    });
+  }
+  
+  // Elementos sin animaciones para evitar problemas de rendimiento
+  document.querySelectorAll('.section, .slider-group').forEach(el => {
+    el.style.opacity = '1';
+    el.style.transform = 'translateY(0)';
   });
-}, observerOptions);
+}
 
-// Initialize animations when DOM is loaded
-document.addEventListener('DOMContentLoaded', function() {
-  // Only add animations if user doesn't prefer reduced motion
+// Características específicas para desktop
+function initializeDesktopFeatures() {
+  // Animaciones de scroll solo en desktop
+  const observerOptions = {
+    threshold: 0.1,
+    rootMargin: '0px 0px -50px 0px'
+  };
+
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.style.opacity = '1';
+        entry.target.style.transform = 'translateY(0)';
+      }
+    });
+  }, observerOptions);
+
+  // Solo agregar animaciones si el usuario no prefiere movimiento reducido
   if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
     document.querySelectorAll('.section, .slider-group').forEach(el => {
       el.style.opacity = '0';
@@ -235,15 +314,37 @@ document.addEventListener('DOMContentLoaded', function() {
       el.style.transition = 'all 0.6s ease';
       observer.observe(el);
     });
+  } else {
+    // Mostrar elementos inmediatamente si se prefiere movimiento reducido
+    document.querySelectorAll('.section, .slider-group').forEach(el => {
+      el.style.opacity = '1';
+      el.style.transform = 'translateY(0)';
+    });
   }
   
-  // Accessibility improvements
-  addAccessibilityFeatures();
-});
+  // Efectos hover más elaborados para desktop
+  const radioOptions = document.querySelectorAll('.radio-option');
+  radioOptions.forEach(option => {
+    option.addEventListener('mouseenter', function() {
+      this.style.transform = 'translateY(-2px)';
+    });
+    
+    option.addEventListener('mouseleave', function() {
+      this.style.transform = 'translateY(0)';
+    });
+    
+    option.addEventListener('click', function() {
+      this.style.transform = 'scale(0.95)';
+      setTimeout(() => {
+        this.style.transform = 'translateY(-2px)';
+      }, 100);
+    });
+  });
+}
 
-// Accessibility features
-function addAccessibilityFeatures() {
-  // Add keyboard navigation for sliders
+// Características de accesibilidad universales
+function initializeAccessibilityFeatures() {
+  // Mejoras de navegación por teclado para sliders
   sliders.forEach(slider => {
     slider.addEventListener('keydown', function(e) {
       const step = 1;
@@ -281,31 +382,32 @@ function addAccessibilityFeatures() {
       }
     });
     
-    // Add ARIA labels for better screen reader support
+    // Agregar etiquetas ARIA para lectores de pantalla
     const sliderGroup = slider.closest('.slider-group');
     if (sliderGroup) {
-      const label = sliderGroup.querySelector('.slider-label').textContent;
+      const label = sliderGroup.querySelector('.slider-label')?.textContent || 'Slider';
       slider.setAttribute('aria-label', label);
       slider.setAttribute('aria-valuemin', slider.min);
       slider.setAttribute('aria-valuemax', slider.max);
       
-      // Update aria-valuenow when slider changes
+      // Actualizar aria-valuenow cuando cambie el slider
       slider.addEventListener('input', function() {
         this.setAttribute('aria-valuenow', this.value);
       });
       
-      // Set initial aria-valuenow
+      // Establecer aria-valuenow inicial
       slider.setAttribute('aria-valuenow', slider.value);
     }
   });
   
-  // Add focus indicators for radio buttons
+  // Indicadores de foco para radio buttons
   const radioButtons = document.querySelectorAll('input[type="radio"]');
   radioButtons.forEach(radio => {
     radio.addEventListener('focus', function() {
       const radioOption = this.closest('.radio-option');
       if (radioOption) {
         radioOption.style.outline = '2px solid var(--primary-brown)';
+        radioOption.style.outlineOffset = '2px';
       }
     });
     
@@ -317,11 +419,12 @@ function addAccessibilityFeatures() {
     });
   });
   
-  // Add focus indicator for select
+  // Indicador de foco para select
   const select = document.getElementById('preferencia');
   if (select) {
     select.addEventListener('focus', function() {
       this.style.outline = '2px solid var(--primary-brown)';
+      this.style.outlineOffset = '2px';
     });
     
     select.addEventListener('blur', function() {
@@ -329,11 +432,11 @@ function addAccessibilityFeatures() {
     });
   }
   
-  // Add skip link for keyboard users
+  // Agregar enlace de salto para usuarios de teclado
   addSkipLink();
 }
 
-// Add skip link for keyboard navigation
+// Agregar enlace de salto para navegación por teclado
 function addSkipLink() {
   const skipLink = document.createElement('a');
   skipLink.href = '#main-content';
@@ -362,7 +465,7 @@ function addSkipLink() {
   
   document.body.insertBefore(skipLink, document.body.firstChild);
   
-  // Add main content ID
+  // Agregar ID de contenido principal
   const container = document.querySelector('.container');
   if (container) {
     container.id = 'main-content';
@@ -370,24 +473,35 @@ function addSkipLink() {
   }
 }
 
-// Handle device orientation changes
+// Manejar cambios de orientación (optimizado para móviles)
 function handleOrientationChange() {
-  // Force recalculation of viewport on mobile devices
-  setTimeout(() => {
-    window.scrollTo(0, 0);
-    
-    // Recalculate slider positions if needed
-    sliders.forEach(slider => {
-      slider.dispatchEvent(new Event('input'));
-    });
-  }, 100);
+  if (isMobile()) {
+    // En móviles, manejar con más cuidado
+    setTimeout(() => {
+      // No hacer scroll automático que puede interferir con el usuario
+      // Solo recalcular posiciones de sliders si es necesario
+      sliders.forEach(slider => {
+        const valueDisplay = document.getElementById(slider.id + 'Value');
+        if (valueDisplay) {
+          valueDisplay.textContent = slider.value;
+        }
+      });
+    }, 100);
+  } else {
+    // En desktop, comportamiento normal
+    setTimeout(() => {
+      sliders.forEach(slider => {
+        slider.dispatchEvent(new Event('input'));
+      });
+    }, 100);
+  }
 }
 
-// Add event listeners for orientation change
+// Event listeners para cambios de orientación
 window.addEventListener('orientationchange', handleOrientationChange);
 window.addEventListener('resize', debounce(handleOrientationChange, 250));
 
-// Debounce function to limit resize event frequency
+// Función debounce para limitar frecuencia de eventos
 function debounce(func, wait) {
   let timeout;
   return function executedFunction(...args) {
@@ -400,22 +514,22 @@ function debounce(func, wait) {
   };
 }
 
-// Save form data to prevent loss on accidental refresh
+// Guardar datos del formulario para prevenir pérdida en actualización accidental
 function saveFormData() {
   const formData = {
-    color: document.getElementById('color').value,
-    aromaInicial: document.getElementById('aromaInicial').value,
-    aromasBoca: document.getElementById('aromasBoca').value,
-    saborEntrada: document.getElementById('saborEntrada').value,
-    saborRetrogusto: document.getElementById('saborRetrogusto').value,
-    persistencia: document.getElementById('persistencia').value,
-    notas: document.getElementById('notas').value,
+    color: document.getElementById('color')?.value || '3',
+    aromaInicial: document.getElementById('aromaInicial')?.value || '3',
+    aromasBoca: document.getElementById('aromasBoca')?.value || '3',
+    saborEntrada: document.getElementById('saborEntrada')?.value || '3',
+    saborRetrogusto: document.getElementById('saborRetrogusto')?.value || '3',
+    persistencia: document.getElementById('persistencia')?.value || '3',
+    notas: document.getElementById('notas')?.value || '',
     artesanal: document.querySelector('input[name="artesanal"]:checked')?.value || '',
     habitual: document.querySelector('input[name="habitual"]:checked')?.value || '',
-    preferencia: document.getElementById('preferencia').value
+    preferencia: document.getElementById('preferencia')?.value || ''
   };
   
-  // Using sessionStorage (funciona en el navegador)
+  // Usar sessionStorage (funciona en el navegador)
   try {
     sessionStorage.setItem('ronEvaluationDraft', JSON.stringify(formData));
   } catch (e) {
@@ -423,14 +537,14 @@ function saveFormData() {
   }
 }
 
-// Load saved form data
+// Cargar datos guardados del formulario
 function loadFormData() {
   try {
     const savedData = sessionStorage.getItem('ronEvaluationDraft');
     if (savedData) {
       const formData = JSON.parse(savedData);
       
-      // Restore slider values
+      // Restaurar valores de sliders
       Object.keys(formData).forEach(key => {
         const element = document.getElementById(key);
         if (element && element.type === 'range') {
@@ -443,7 +557,7 @@ function loadFormData() {
         }
       });
       
-      // Restore radio button values
+      // Restaurar valores de radio buttons
       if (formData.artesanal) {
         const artesanalRadio = document.querySelector(`input[name="artesanal"][value="${formData.artesanal}"]`);
         if (artesanalRadio) artesanalRadio.checked = true;
@@ -458,3 +572,14 @@ function loadFormData() {
     console.log('No se pudo cargar el borrador:', e);
   }
 }
+
+// Función global para enviar evaluación (mantener compatibilidad)
+function submitEvaluation() {
+  const form = document.getElementById('formulario');
+  if (form) {
+    form.dispatchEvent(new Event('submit'));
+  }
+}
+
+// Hacer funciones disponibles globalmente si es necesario
+window.submitEvaluation = submitEvaluation;
