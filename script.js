@@ -237,70 +237,72 @@ document.addEventListener('DOMContentLoaded', function() {
   initializeAccessibilityFeatures();
 });
 
-// Características específicas para móviles - CORREGIDO
+// Características específicas para móviles - SOLUCIÓN RADICAL
 function initializeMobileFeatures() {
-  // NO modificar el viewport de manera tan restrictiva
-  // Esto podría estar causando problemas
-  
-  // Manejo CORREGIDO del textarea en móviles
   const textarea = document.getElementById('notas');
   if (textarea) {
     
-    textarea.addEventListener('focus', function() {
+    // SOLUCIÓN RADICAL: NO hacer NINGÚN scroll automático
+    textarea.addEventListener('focus', function(e) {
       isTextareaFocused = true;
-      originalScrollY = window.scrollY;
       preventScrollReset = true;
       
-      // Scroll más suave y controlado
+      // Guardar posición actual y MANTENERLA
+      const currentScrollY = window.scrollY;
+      
+      // Prevenir cualquier scroll automático del navegador
       setTimeout(() => {
-        if (isTextareaFocused) {
-          const rect = this.getBoundingClientRect();
-          const windowHeight = window.innerHeight;
-          
-          // Solo hacer scroll si realmente es necesario
-          if (rect.top < 50 || rect.bottom > windowHeight - 50) {
-            const targetY = window.scrollY + rect.top - (windowHeight * 0.3);
-            
-            window.scrollTo({
-              top: Math.max(0, targetY),
-              behavior: 'smooth'
-            });
-          }
+        if (window.scrollY !== currentScrollY) {
+          window.scrollTo(0, currentScrollY);
         }
-      }, 150); // Reducido el tiempo de espera
+      }, 0);
+      
+      setTimeout(() => {
+        if (window.scrollY !== currentScrollY) {
+          window.scrollTo(0, currentScrollY);
+        }
+      }, 10);
+      
+      setTimeout(() => {
+        if (window.scrollY !== currentScrollY) {
+          window.scrollTo(0, currentScrollY);
+        }
+      }, 50);
+      
+      setTimeout(() => {
+        if (window.scrollY !== currentScrollY) {
+          window.scrollTo(0, currentScrollY);
+        }
+      }, 100);
     });
     
     textarea.addEventListener('blur', function() {
       isTextareaFocused = false;
       
-      // NO hacer scroll automático al perder foco
-      // Esto era una de las causas principales del problema
       setTimeout(() => {
         preventScrollReset = false;
-      }, 300);
+      }, 500);
     });
     
-    // Prevenir scroll no deseado en cambios de input
+    // Prevenir scroll en todos los eventos del textarea
     textarea.addEventListener('input', function(e) {
+      e.stopPropagation();
+    });
+    
+    textarea.addEventListener('click', function(e) {
+      e.stopPropagation();
+    });
+    
+    textarea.addEventListener('touchstart', function(e) {
       e.stopPropagation();
     });
   }
   
-  // Elementos sin animaciones para evitar problemas de rendimiento
+  // Elementos sin animaciones
   document.querySelectorAll('.section, .slider-group').forEach(el => {
     el.style.opacity = '1';
     el.style.transform = 'translateY(0)';
   });
-  
-  // Prevenir scroll accidental en iOS
-  document.addEventListener('touchmove', function(e) {
-    if (isTextareaFocused && e.target !== textarea) {
-      // Solo prevenir si no es el textarea que está siendo usado
-      if (!e.target.closest('#notas')) {
-        e.preventDefault();
-      }
-    }
-  }, { passive: false });
 }
 
 // Características específicas para desktop
@@ -446,39 +448,6 @@ function initializeAccessibilityFeatures() {
     });
   }
   
-  // Agregar enlace de salto para usuarios de teclado
-  addSkipLink();
-}
-
-// Agregar enlace de salto para navegación por teclado
-function addSkipLink() {
-  const skipLink = document.createElement('a');
-  skipLink.href = '#main-content';
-  skipLink.textContent = 'Saltar al contenido principal';
-  skipLink.className = 'skip-link';
-  skipLink.style.cssText = `
-    position: absolute;
-    top: -40px;
-    left: 6px;
-    background: var(--primary-brown);
-    color: white;
-    padding: 8px;
-    text-decoration: none;
-    border-radius: 4px;
-    z-index: 1000;
-    transition: top 0.3s;
-  `;
-  
-  skipLink.addEventListener('focus', function() {
-    this.style.top = '6px';
-  });
-  
-  skipLink.addEventListener('blur', function() {
-    this.style.top = '-40px';
-  });
-  
-  document.body.insertBefore(skipLink, document.body.firstChild);
-  
   // Agregar ID de contenido principal
   const container = document.querySelector('.container');
   if (container) {
@@ -514,24 +483,71 @@ function handleOrientationChange() {
 window.addEventListener('orientationchange', handleOrientationChange);
 window.addEventListener('resize', debounce(handleOrientationChange, 300));
 
-// Prevenir scroll automático no deseado en móviles
+// Prevenir scroll automático no deseado en móviles - SOLUCIÓN RADICAL
 if (isMobile()) {
-  // Interceptar intentos de scroll automático problemáticos
-  let isScrolling = false;
+  let lastScrollY = 0;
+  let isUserScrolling = false;
+  let scrollTimer = null;
   
-  window.addEventListener('scroll', function() {
-    if (!isScrolling && !isTextareaFocused && !preventScrollReset) {
-      isScrolling = true;
-      setTimeout(() => {
-        isScrolling = false;
-      }, 100);
+  // Interceptar TODOS los intentos de scroll automático
+  window.addEventListener('scroll', function(e) {
+    const currentScrollY = window.scrollY;
+    
+    // Si el scroll cambió y no fue por el usuario
+    if (!isUserScrolling && isTextareaFocused) {
+      // FORZAR a mantener la posición
+      e.preventDefault();
+      window.scrollTo(0, lastScrollY);
+      return false;
     }
+    
+    // Si es scroll del usuario, actualizar la posición válida
+    if (isUserScrolling) {
+      lastScrollY = currentScrollY;
+    }
+  }, { passive: false });
+  
+  // Detectar scroll del usuario vs automático
+  window.addEventListener('touchstart', function() {
+    isUserScrolling = true;
+    lastScrollY = window.scrollY;
   }, { passive: true });
   
-  // Prevenir scroll a la parte superior por defecto en algunos eventos
+  window.addEventListener('touchend', function() {
+    setTimeout(() => {
+      isUserScrolling = false;
+    }, 100);
+  }, { passive: true });
+  
+  // Prevenir scroll por teclado virtual
+  window.addEventListener('resize', function() {
+    if (isTextareaFocused) {
+      clearTimeout(scrollTimer);
+      scrollTimer = setTimeout(() => {
+        window.scrollTo(0, lastScrollY);
+      }, 10);
+    }
+  });
+  
+  // Interceptar focusin para prevenir scroll automático del navegador
   document.addEventListener('focusin', function(e) {
-    if (e.target.tagName !== 'TEXTAREA' && e.target.tagName !== 'INPUT') {
-      e.preventDefault();
+    if (e.target.id === 'notas') {
+      lastScrollY = window.scrollY;
+      
+      // Prevenir el comportamiento por defecto de scroll
+      setTimeout(() => {
+        window.scrollTo(0, lastScrollY);
+      }, 0);
+    }
+  });
+  
+  // Prevenir comportamientos problemáticos adicionales
+  document.addEventListener('focusout', function(e) {
+    if (e.target.id === 'notas') {
+      // Mantener posición al perder foco
+      setTimeout(() => {
+        window.scrollTo(0, lastScrollY);
+      }, 10);
     }
   });
 }
