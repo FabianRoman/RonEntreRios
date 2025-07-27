@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Evaluación de Ron - Especialistas</title>
+    <link rel="stylesheet" href="stylesPro.css">
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Evaluación de Ron</h1>
+            <p class="subtitle">Formulario para especialistas en tragos</p>
+            <img src="/img/RonEntreRios.png" alt="Ron Logo" class="ron-logo">
+        </div>
+
+        <form id="rumEvaluationForm">
+            <!-- Información del evaluador -->
+            <div class="section">
+                <h2><span class="section-icon">🧍‍♂️</span>Información del evaluador</h2>
+                
+                <div class="profile-question">
+                    <label class="question-label" for="email">Correo electrónico *</label>
+                    <input type="email" id="email" name="email" class="custom-input" required>
+                </div>
+
+                <div class="profile-question">
+                    <label class="question-label" for="name">Nombre *</label>
+                    <input type="text" id="name" name="name" class="custom-input" required>
+                </div>
+
+                <div class="profile-question">
+                    <label class="question-label" for="age">Edad *</label>
+                    <input type="number" id="age" name="age" class="custom-input" min="18" max="100" required>
+                </div>
+
+                <div class="profile-question">
+                    <label class="question-label">Sexo *</label>
+                    <div class="radio-group">
+                        <label class="radio-option">
+                            <input type="radio" name="gender" value="masculino" required>
+                            <span class="radio-label">Masculino</span>
+                        </label>
+                        <label class="radio-option">
+                            <input type="radio" name="gender" value="femenino" required>
+                            <span class="radio-label">Femenino</span>
+                        </label>
+                        <label class="radio-option">
+                            <input type="radio" name="gender" value="otro" required>
+                            <span class="radio-label">Otro</span>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="profile-question">
+                    <label class="question-label">¿Consumes ron con frecuencia? *</label>
+                    <div class="radio-group">
+                        <label class="radio-option">
+                            <input type="radio" name="rum_frequency" value="si" required>
+                            <span class="radio-label">Sí</span>
+                        </label>
+                        <label class="radio-option">
+                            <input type="radio" name="rum_frequency" value="no" required>
+                            <span class="radio-label">No</span>
+                        </label>
+                        <label class="radio-option">
+                            <input type="radio" name="rum_frequency" value="ocasionalmente" required>
+                            <span class="radio-label">Ocasionalmente</span>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="profile-question">
+                    <label class="question-label" for="preferred_drink">¿Cuál es tu bebida alcohólica preferida? *</label>
+                    <div class="select-container">
+                        <select id="preferred_drink" name="preferred_drink" class="custom-select" required>
+                            <option value="">Selecciona una opción</option>
+                            <option value="ron">Ron</option>
+                            <option value="whisky">Whisky</option>
+                            <option value="vodka">Vodka</option>
+                            <option value="tequila">Tequila</option>
+                            <option value="gin">Gin</option>
+                            <option value="brandy">Brandy</option>
+                            <option value="licores">Licores</option>
+                            <option value="cerveza">Cerveza</option>
+                            <option value="vino">Vino</option>
+                            <option value="otra">Otra</option>
+                        </select>
+                        <span class="select-arrow">▼</span>
+                    </div>
+                </div>
+
+                <div class="profile-question">
+                    <label class="question-label" for="phone">Celular (opcional)</label>
+                    <input type="tel" id="phone" name="phone" class="custom-input">
+                </div>
+            </div>
+
+            <!-- Evaluación sensorial del ron -->
+            <div class="section">
+                <h2><span class="section-icon">🍷</span>Evaluación sensorial del ron</h2>
+                
+                <!-- Aroma -->
+                <h3 class="subsection-title">1. Aroma</h3>
+                
+                <div class="slider-group">
+                    <div class="slider-label">Aroma general</div>
+                    <div class="slider-container">
+                        <div class="slider-labels">
+                            <span>Muy desagradable</span>
+                            <span>Desagradable</span>
+                            <span>Neutro</span>
+                            <span>Agradable</span>
+                            <span>Muy agradable</span>
+                        </div>
+                        <input type="range" class="slider" id="general_aroma" name="general_aroma" min="1" max="5" value="3" step="1">
+                        <div class="slider-value" id="general_aroma_value">3</div>
+                    </div>
+                </div>
+
+                <div class="slider-group">
+                    <div class="slider-label">Intensidad aromática</div>
+                    <div class="slider-container">
+                        <div class="slider-labels">
+                            <span>Muy débil</span>
+                            <span>Débil</span>
+                            <span>Moderada</span>
+                            <span>Fuerte</span>
+                            <span>Muy fuerte</span>
+                        </div>
+                        <input type="range" class="slider" id="aroma_intensity" name="aroma_intensity" min="1" max="5" value="3" step="1">
+                        <div class="slider-value" id="aroma_intensity_value">3</div>
+                    </div>
+                </div>
+
+                <div class="slider-group">
+                    <div class="slider-label">Notas herbales (si las percibes)</div>
+                    <div class="slider-container">
+                        <div class="slider-labels">
+                            <span>No percibo</span>
+                            <span>Muy leves</span>
+                            <span>Moderadas</span>
+                            <span>Pronunciadas</span>
+                            <span>Muy pronunciadas</span>
+                        </div>
+                        <input type="range" class="slider" id="herbal_notes" name="herbal_notes" min="1" max="5" value="1" step="1">
+                        <div class="slider-value" id="herbal_notes_value">1</div>
+                    </div>
+                </div>
+
+                <!-- Sabor -->
+                <h3 class="subsection-title">2. Sabor</h3>
+
+                <div class="slider-group">
+                    <div class="slider-label">Sabor al primer contacto</div>
+                    <div class="slider-container">
+                        <div class="slider-labels">
+                            <span>Muy desagradable</span>
+                            <span>Desagradable</span>
+                            <span>Neutro</span>
+                            <span>Agradable</span>
+                            <span>Muy agradable</span>
+                        </div>
+                        <input type="range" class="slider" id="first_taste" name="first_taste" min="1" max="5" value="3" step="1">
+                        <div class="slider-value" id="first_taste_value">3</div>
+                    </div>
+                </div>
+
+                <div class="slider-group">
+                    <div class="slider-label">Dulzor</div>
+                    <div class="slider-container">
+                        <div class="slider-labels">
+                            <span>Muy seco</span>
+                            <span>Seco</span>
+                            <span>Equilibrado</span>
+                            <span>Dulce</span>
+                            <span>Muy dulce</span>
+                        </div>
+                        <input type="range" class="slider" id="sweetness" name="sweetness" min="1" max="5" value="3" step="1">
+                        <div class="slider-value" id="sweetness_value">3</div>
+                    </div>
+                </div>
+
+                <div class="slider-group">
+                    <div class="slider-label">Retrogusto (después de tragar)</div>
+                    <div class="slider-container">
+                        <div class="slider-labels">
+                            <span>Muy desagradable</span>
+                            <span>Desagradable</span>
+                            <span>Neutro</span>
+                            <span>Agradable</span>
+                            <span>Muy agradable</span>
+                        </div>
+                        <input type="range" class="slider" id="aftertaste" name="aftertaste" min="1" max="5" value="3" step="1">
+                        <div class="slider-value" id="aftertaste_value">3</div>
+                    </div>
+                </div>
+
+                <div class="slider-group">
+                    <div class="slider-label">Sensación en boca (cuerpo)</div>
+                    <div class="slider-container">
+                        <div class="slider-labels">
+                            <span>Muy ligero</span>
+                            <span>Ligero</span>
+                            <span>Medio</span>
+                            <span>Completo</span>
+                            <span>Muy completo</span>
+                        </div>
+                        <input type="range" class="slider" id="body" name="body" min="1" max="5" value="3" step="1">
+                        <div class="slider-value" id="body_value">3</div>
+                    </div>
+                </div>
+
+                <div class="slider-group">
+                    <div class="slider-label">Suavidad del ron</div>
+                    <div class="slider-container">
+                        <div class="slider-labels">
+                            <span>Muy áspero</span>
+                            <span>Áspero</span>
+                            <span>Moderado</span>
+                            <span>Suave</span>
+                            <span>Muy suave</span>
+                        </div>
+                        <input type="range" class="slider" id="smoothness" name="smoothness" min="1" max="5" value="3" step="1">
+                        <div class="slider-value" id="smoothness_value">3</div>
+                    </div>
+                </div>
+
+                <!-- Otros -->
+                <h3 class="subsection-title">3. Otros</h3>
+
+                <div class="slider-group">
+                    <div class="slider-label">Presencia de madera/roble</div>
+                    <div class="slider-container">
+                        <div class="slider-labels">
+                            <span>No percibo</span>
+                            <span>Muy leve</span>
+                            <span>Moderada</span>
+                            <span>Pronunciada</span>
+                            <span>Muy pronunciada</span>
+                        </div>
+                        <input type="range" class="slider" id="wood_presence" name="wood_presence" min="1" max="5" value="1" step="1">
+                        <div class="slider-value" id="wood_presence_value">1</div>
+                    </div>
+                </div>
+
+                <div class="slider-group">
+                    <div class="slider-label">Balance general del producto</div>
+                    <div class="slider-container">
+                        <div class="slider-labels">
+                            <span>Muy desbalanceado</span>
+                            <span>Desbalanceado</span>
+                            <span>Aceptable</span>
+                            <span>Balanceado</span>
+                            <span>Muy balanceado</span>
+                        </div>
+                        <input type="range" class="slider" id="balance" name="balance" min="1" max="5" value="3" step="1">
+                        <div class="slider-value" id="balance_value">3</div>
+                    </div>
+                </div>
+
+                <div class="profile-question">
+                    <label class="question-label" for="perceived_flavors">¿Qué aromas o sabores percibiste?</label>
+                    <div class="notes-container">
+                        <textarea id="perceived_flavors" name="perceived_flavors" class="notes-textarea" placeholder="Describe los aromas y sabores que percibiste (ej: vainilla, caramelo, especias, frutas, etc.)"></textarea>
+                    </div>
+                </div>
+
+                <div class="profile-question">
+                    <label class="question-label" for="reminded_of">¿A qué te recordó este ron?</label>
+                    <div class="notes-container">
+                        <textarea id="reminded_of" name="reminded_of" class="notes-textarea" placeholder="Describe a qué te recordó este ron (situaciones, lugares, otros productos, etc.)"></textarea>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Evaluación final -->
+            <div class="section">
+                <h2><span class="section-icon">⭐</span>Evaluación final</h2>
+
+                <div class="profile-question">
+                    <label class="question-label">¿Lo consumirías nuevamente? *</label>
+                    <div class="radio-group">
+                        <label class="radio-option">
+                            <input type="radio" name="would_consume_again" value="definitivamente_si" required>
+                            <span class="radio-label">Definitivamente sí</span>
+                        </label>
+                        <label class="radio-option">
+                            <input type="radio" name="would_consume_again" value="probablemente_si" required>
+                            <span class="radio-label">Probablemente sí</span>
+                        </label>
+                        <label class="radio-option">
+                            <input type="radio" name="would_consume_again" value="indeciso" required>
+                            <span class="radio-label">Indeciso</span>
+                        </label>
+                        <label class="radio-option">
+                            <input type="radio" name="would_consume_again" value="probablemente_no" required>
+                            <span class="radio-label">Probablemente no</span>
+                        </label>
+                        <label class="radio-option">
+                            <input type="radio" name="would_consume_again" value="definitivamente_no" required>
+                            <span class="radio-label">Definitivamente no</span>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="profile-question">
+                    <label class="question-label">¿Lo recomendarías a un amigo? *</label>
+                    <div class="radio-group">
+                        <label class="radio-option">
+                            <input type="radio" name="would_recommend" value="definitivamente_si" required>
+                            <span class="radio-label">Definitivamente sí</span>
+                        </label>
+                        <label class="radio-option">
+                            <input type="radio" name="would_recommend" value="probablemente_si" required>
+                            <span class="radio-label">Probablemente sí</span>
+                        </label>
+                        <label class="radio-option">
+                            <input type="radio" name="would_recommend" value="indeciso" required>
+                            <span class="radio-label">Indeciso</span>
+                        </label>
+                        <label class="radio-option">
+                            <input type="radio" name="would_recommend" value="probablemente_no" required>
+                            <span class="radio-label">Probablemente no</span>
+                        </label>
+                        <label class="radio-option">
+                            <input type="radio" name="would_recommend" value="definitivamente_no" required>
+                            <span class="radio-label">Definitivamente no</span>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="profile-question">
+                    <label class="question-label" for="price_range">¿A qué precio te parecería adecuado comprar una botella de 750 ml? *</label>
+                    <div class="select-container">
+                        <select id="price_range" name="price_range" class="custom-select" required>
+                            <option value="">Selecciona un rango de precio</option>
+                            <option value="menos_50000">Menos de $50,000 COP</option>
+                            <option value="50000_100000">$50,000 - $100,000 COP</option>
+                            <option value="100000_150000">$100,000 - $150,000 COP</option>
+                            <option value="150000_200000">$150,000 - $200,000 COP</option>
+                            <option value="200000_300000">$200,000 - $300,000 COP</option>
+                            <option value="mas_300000">Más de $300,000 COP</option>
+                        </select>
+                        <span class="select-arrow">▼</span>
+                    </div>
+                </div>
+
+                <div class="profile-question">
+                    <div class="slider-label">Total de puntos (calculado automáticamente)</div>
+                    <div class="total-score" id="total_score">0</div>
+                </div>
+            </div>
+
+            <!-- Comentarios generales -->
+            <div class="section">
+                <h2><span class="section-icon">✍️</span>Comentarios generales</h2>
+
+                <div class="profile-question">
+                    <label class="question-label" for="questionnaire_comments">Comentarios del cuestionario</label>
+                    <div class="notes-container">
+                        <textarea id="questionnaire_comments" name="questionnaire_comments" class="notes-textarea" placeholder="Comparte tu opinión sobre este cuestionario de evaluación"></textarea>
+                    </div>
+                </div>
+
+                <div class="profile-question">
+                    <label class="question-label" for="additional_comments">Comentarios adicionales</label>
+                    <div class="notes-container">
+                        <textarea id="additional_comments" name="additional_comments" class="notes-textarea" placeholder="Cualquier comentario adicional que desees agregar"></textarea>
+                    </div>
+                </div>
+            </div>
+
+            <button type="submit" class="submit-btn" id="submitBtn">
+                <span id="buttonText">Enviar Evaluación</span>
+                <div id="loadingSpinner" class="loading-spinner" style="display: none;"></div>
+            </button>
+        </form>
+    </div>
+
+    <script src="scriptPro.js"></script>
+</body>
+</html>

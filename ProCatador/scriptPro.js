@@ -1,4 +1,4 @@
-// Ron Entre Ríos - Script optimizado para móviles (SIN BUGS DE SCROLL)
+// Ron Entre Ríos - Script optimizado para móviles - Versión Especialistas
 // Detectar si es dispositivo móvil
 const isMobile = () => window.innerWidth <= 768 || 'ontouchstart' in window;
 
@@ -10,14 +10,38 @@ let preventScrollReset = false;
 // Update slider values in real time
 const sliders = document.querySelectorAll('.slider');
 sliders.forEach(slider => {
-  const valueDisplay = document.getElementById(slider.id + 'Value');
+  const valueDisplay = document.getElementById(slider.id + '_value');
   
   slider.addEventListener('input', function() {
     if (valueDisplay) {
       valueDisplay.textContent = this.value;
     }
+    // Calcular puntaje total automáticamente
+    calculateTotalScore();
   });
 });
+
+// Calcular puntaje total automáticamente
+function calculateTotalScore() {
+  const sensorySlidersIds = [
+    'general_aroma', 'aroma_intensity', 'herbal_notes',
+    'first_taste', 'sweetness', 'aftertaste', 
+    'body', 'smoothness', 'wood_presence', 'balance'
+  ];
+  
+  let totalScore = 0;
+  sensorySlidersIds.forEach(id => {
+    const slider = document.getElementById(id);
+    if (slider) {
+      totalScore += parseInt(slider.value);
+    }
+  });
+  
+  const totalScoreDisplay = document.getElementById('total_score');
+  if (totalScoreDisplay) {
+    totalScoreDisplay.textContent = totalScore;
+  }
+}
 
 // Show message function (optimizada)
 function showMessage(message, isError = false) {
@@ -82,16 +106,61 @@ function showMessage(message, isError = false) {
 function validateForm() {
   const errors = [];
   
+  // Validar campos requeridos
+  const requiredFields = [
+    { id: 'email', name: 'Correo electrónico' },
+    { id: 'name', name: 'Nombre' },
+    { id: 'age', name: 'Edad' },
+    { id: 'preferred_drink', name: 'Bebida preferida' },
+    { id: 'price_range', name: 'Rango de precio' }
+  ];
+  
+  requiredFields.forEach(field => {
+    const element = document.getElementById(field.id);
+    if (!element || !element.value.trim()) {
+      errors.push(`${field.name} es requerido`);
+    }
+  });
+  
+  // Validar radio buttons requeridos
+  const radioGroups = ['gender', 'rum_frequency', 'would_consume_again', 'would_recommend'];
+  radioGroups.forEach(groupName => {
+    const checked = document.querySelector(`input[name="${groupName}"]:checked`);
+    if (!checked) {
+      errors.push(`Debes seleccionar una opción para ${groupName.replace('_', ' ')}`);
+    }
+  });
+  
+  // Validar edad
+  const age = document.getElementById('age');
+  if (age && age.value && (parseInt(age.value) < 18 || parseInt(age.value) > 100)) {
+    errors.push('La edad debe estar entre 18 y 100 años');
+  }
+  
+  // Validar email
+  const email = document.getElementById('email');
+  if (email && email.value) {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email.value)) {
+      errors.push('El formato del email no es válido');
+    }
+  }
+  
+  if (errors.length > 0) {
+    showMessage('<strong>Errores encontrados:</strong><br>' + errors.join('<br>'), true);
+    return false;
+  }
+  
   // Check if at least some evaluation has been made
   const sliderValues = [];
   sliders.forEach(slider => {
     sliderValues.push(parseInt(slider.value));
   });
   
-  // If all sliders are at default value (3), ask for confirmation
-  const allDefault = sliderValues.every(value => value === 3);
-  if (allDefault) {
-    if (!confirm('Parece que no has modificado ninguna evaluación sensorial. ¿Deseas continuar?')) {
+  // If most sliders are at default value, ask for confirmation
+  const defaultValues = sliderValues.filter(value => value === 3 || value === 1);
+  if (defaultValues.length >= sliderValues.length * 0.8) {
+    if (!confirm('Parece que no has modificado muchas evaluaciones sensoriales. ¿Deseas continuar?')) {
       return false;
     }
   }
@@ -101,8 +170,13 @@ function validateForm() {
 
 // CAPTURA DE DATOS Y ENVIO A LA HOJA DE EXCEL ONLINE
 document.addEventListener('DOMContentLoaded', function() {
-  const formulario = document.getElementById('formulario');
+  const formulario = document.getElementById('rumEvaluationForm');
   const submitBtn = document.getElementById('submitBtn');
+  const buttonText = document.getElementById('buttonText');
+  const loadingSpinner = document.getElementById('loadingSpinner');
+  
+  // Calcular puntaje inicial
+  calculateTotalScore();
   
   if (formulario) {
     formulario.addEventListener('submit', async function (e) {
@@ -114,8 +188,8 @@ document.addEventListener('DOMContentLoaded', function() {
       }
 
       // Cambiar estado del botón
-      const originalText = submitBtn.textContent;
-      submitBtn.innerHTML = '<span class="loading"></span>Enviando...';
+      buttonText.style.display = 'none';
+      loadingSpinner.style.display = 'inline-block';
       submitBtn.disabled = true;
 
       // Agregar estilos para loading spinner si no existen
@@ -123,7 +197,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const style = document.createElement('style');
         style.id = 'loading-styles';
         style.textContent = `
-          .loading {
+          .loading-spinner {
             display: inline-block;
             width: 20px;
             height: 20px;
@@ -131,7 +205,7 @@ document.addEventListener('DOMContentLoaded', function() {
             border-radius: 50%;
             border-top-color: #fff;
             animation: spin 1s ease-in-out infinite;
-            margin-right: 10px;
+            margin-left: 10px;
           }
           @keyframes spin {
             to { transform: rotate(360deg); }
@@ -142,32 +216,52 @@ document.addEventListener('DOMContentLoaded', function() {
 
       // Recopilar datos del formulario
       const data = {
+        // Información básica
         timestamp: new Date().toISOString(),
-        color: document.getElementById('color')?.value || '3',
-        aromaInicial: document.getElementById('aromaInicial')?.value || '3',
-        aromasBoca: document.getElementById('aromasBoca')?.value || '3',
-        saborEntrada: document.getElementById('saborEntrada')?.value || '3',
-        saborRetrogusto: document.getElementById('saborRetrogusto')?.value || '3',
-        persistencia: document.getElementById('persistencia')?.value || '3',
-        notas: document.getElementById('notas')?.value.trim() || '',
-        artesanal: document.querySelector('input[name="artesanal"]:checked')?.value || 'No especificado',
-        habitual: document.querySelector('input[name="habitual"]:checked')?.value || 'No especificado',
-        preferencia: document.getElementById('preferencia')?.value || 'No especificado'
+        email: document.getElementById('email')?.value?.trim() || '',
+        nombre: document.getElementById('name')?.value?.trim() || '',
+        edad: document.getElementById('age')?.value || '',
+        sexo: document.querySelector('input[name="gender"]:checked')?.value || '',
+        frecuencia_ron: document.querySelector('input[name="rum_frequency"]:checked')?.value || '',
+        bebida_preferida: document.getElementById('preferred_drink')?.value || '',
+        telefono: document.getElementById('phone')?.value?.trim() || '',
+        
+        // Evaluaciones sensoriales (Aroma)
+        aroma_general: document.getElementById('general_aroma')?.value || '3',
+        intensidad_aromatica: document.getElementById('aroma_intensity')?.value || '3',
+        notas_herbales: document.getElementById('herbal_notes')?.value || '1',
+        
+        // Evaluaciones sensoriales (Sabor)
+        primer_contacto: document.getElementById('first_taste')?.value || '3',
+        dulzor: document.getElementById('sweetness')?.value || '3',
+        retrogusto: document.getElementById('aftertaste')?.value || '3',
+        cuerpo: document.getElementById('body')?.value || '3',
+        suavidad: document.getElementById('smoothness')?.value || '3',
+        
+        // Otras evaluaciones
+        presencia_madera: document.getElementById('wood_presence')?.value || '1',
+        balance_general: document.getElementById('balance')?.value || '3',
+        
+        // Campos de texto
+        sabores_percibidos: document.getElementById('perceived_flavors')?.value?.trim() || '',
+        recordo_a: document.getElementById('reminded_of')?.value?.trim() || '',
+        
+        // Evaluación final
+        consumiria_nuevamente: document.querySelector('input[name="would_consume_again"]:checked')?.value || '',
+        recomendaria: document.querySelector('input[name="would_recommend"]:checked')?.value || '',
+        rango_precio: document.getElementById('price_range')?.value || '',
+        
+        // Comentarios
+        comentarios_cuestionario: document.getElementById('questionnaire_comments')?.value?.trim() || '',
+        comentarios_adicionales: document.getElementById('additional_comments')?.value?.trim() || '',
+        
+        // Puntaje total
+        puntaje_total: document.getElementById('total_score')?.textContent || '0'
       };
 
-      // Validación de notas
-      if (!data.notas) {
-        if (!confirm('¿Estás seguro de enviar la evaluación sin notas del catador?')) {
-          // Restaurar botón
-          submitBtn.textContent = originalText;
-          submitBtn.disabled = false;
-          document.getElementById('notas')?.focus();
-          return;
-        }
-      }
-
-      // URL de tu Google Apps Script
-      const url = 'https://script.google.com/macros/s/AKfycbw8Zn4QBeMWAwQSmr82LEahHooPq6gxUHMznr9GlxQwHfuvx3d-XR3WFU-EAR66cHuMfw/exec';
+      // URL Google Apps Script - CAMBIAR POR LA TUYA
+      const url = 'https://script.google.com/macros/s/AKfycbzu-8V8G3hv9klYnRhB_b9JQ4XnFWEed4deUf8sgYNRCE0bxoHjzN2QD9DDGhZ6PASv8A/exec';
+      
 
       try {
         console.log('Enviando datos:', data);
@@ -183,24 +277,29 @@ document.addEventListener('DOMContentLoaded', function() {
 
         console.log('Respuesta enviada');
         
-        // Mostrar mensaje de éxito
-        showMessage('<strong>¡Evaluación enviada exitosamente!</strong><br>Gracias por tu participación 🥃');
+        // Como usamos no-cors, no podemos leer la respuesta
+        // Asumimos que fue exitoso si no hay error
+        showMessage('<strong>¡Evaluación enviada exitosamente!</strong><br>Gracias por tu participación como especialista 🥃');
         
         // Limpiar formulario
         formulario.reset();
         
         // Resetear sliders a valor por defecto
         sliders.forEach(slider => {
-          slider.value = 3;
-          const valueDisplay = document.getElementById(slider.id + 'Value');
+          const defaultValue = slider.id === 'herbal_notes' || slider.id === 'wood_presence' ? '1' : '3';
+          slider.value = defaultValue;
+          const valueDisplay = document.getElementById(slider.id + '_value');
           if (valueDisplay) {
-            valueDisplay.textContent = '3';
+            valueDisplay.textContent = defaultValue;
           }
         });
         
+        // Recalcular puntaje total
+        calculateTotalScore();
+        
         // Limpiar datos guardados si los hay
         try {
-          sessionStorage.removeItem('ronEvaluationDraft');
+          sessionStorage.removeItem('rumEvaluationDraft');
         } catch (e) {
           console.log('No se pudo limpiar el borrador:', e);
         }
@@ -211,7 +310,8 @@ document.addEventListener('DOMContentLoaded', function() {
       } finally {
         // Restaurar botón
         setTimeout(() => {
-          submitBtn.textContent = originalText;
+          buttonText.style.display = 'inline';
+          loadingSpinner.style.display = 'none';
           submitBtn.disabled = false;
         }, 1000);
       }
@@ -239,8 +339,8 @@ document.addEventListener('DOMContentLoaded', function() {
 
 // Características específicas para móviles - SOLUCIÓN RADICAL
 function initializeMobileFeatures() {
-  const textarea = document.getElementById('notas');
-  if (textarea) {
+  const textareas = document.querySelectorAll('textarea');
+  textareas.forEach(textarea => {
     
     // SOLUCIÓN RADICAL: NO hacer NINGÚN scroll automático
     textarea.addEventListener('focus', function(e) {
@@ -296,7 +396,7 @@ function initializeMobileFeatures() {
     textarea.addEventListener('touchstart', function(e) {
       e.stopPropagation();
     });
-  }
+  });
   
   // Elementos sin animaciones
   document.querySelectorAll('.section, .slider-group').forEach(el => {
@@ -435,9 +535,9 @@ function initializeAccessibilityFeatures() {
     });
   });
   
-  // Indicador de foco para select
-  const select = document.getElementById('preferencia');
-  if (select) {
+  // Indicador de foco para selects
+  const selects = document.querySelectorAll('select');
+  selects.forEach(select => {
     select.addEventListener('focus', function() {
       this.style.outline = '2px solid var(--primary-brown)';
       this.style.outlineOffset = '2px';
@@ -446,7 +546,7 @@ function initializeAccessibilityFeatures() {
     select.addEventListener('blur', function() {
       this.style.outline = 'none';
     });
-  }
+  });
   
   // Agregar ID de contenido principal
   const container = document.querySelector('.container');
@@ -463,11 +563,12 @@ function handleOrientationChange() {
     setTimeout(() => {
       // Solo actualizar valores de sliders, NO hacer scroll
       sliders.forEach(slider => {
-        const valueDisplay = document.getElementById(slider.id + 'Value');
+        const valueDisplay = document.getElementById(slider.id + '_value');
         if (valueDisplay) {
           valueDisplay.textContent = slider.value;
         }
       });
+      calculateTotalScore();
     }, 200);
   } else if (!isMobile()) {
     // En desktop, comportamiento normal
@@ -531,7 +632,7 @@ if (isMobile()) {
   
   // Interceptar focusin para prevenir scroll automático del navegador
   document.addEventListener('focusin', function(e) {
-    if (e.target.id === 'notas') {
+    if (e.target.tagName === 'TEXTAREA') {
       lastScrollY = window.scrollY;
       
       // Prevenir el comportamiento por defecto de scroll
@@ -543,7 +644,7 @@ if (isMobile()) {
   
   // Prevenir comportamientos problemáticos adicionales
   document.addEventListener('focusout', function(e) {
-    if (e.target.id === 'notas') {
+    if (e.target.tagName === 'TEXTAREA') {
       // Mantener posición al perder foco
       setTimeout(() => {
         window.scrollTo(0, lastScrollY);
@@ -568,21 +669,44 @@ function debounce(func, wait) {
 // Guardar datos del formulario para prevenir pérdida en actualización accidental
 function saveFormData() {
   const formData = {
-    color: document.getElementById('color')?.value || '3',
-    aromaInicial: document.getElementById('aromaInicial')?.value || '3',
-    aromasBoca: document.getElementById('aromasBoca')?.value || '3',
-    saborEntrada: document.getElementById('saborEntrada')?.value || '3',
-    saborRetrogusto: document.getElementById('saborRetrogusto')?.value || '3',
-    persistencia: document.getElementById('persistencia')?.value || '3',
-    notas: document.getElementById('notas')?.value || '',
-    artesanal: document.querySelector('input[name="artesanal"]:checked')?.value || '',
-    habitual: document.querySelector('input[name="habitual"]:checked')?.value || '',
-    preferencia: document.getElementById('preferencia')?.value || ''
+    // Información básica
+    email: document.getElementById('email')?.value || '',
+    name: document.getElementById('name')?.value || '',
+    age: document.getElementById('age')?.value || '',
+    phone: document.getElementById('phone')?.value || '',
+    preferred_drink: document.getElementById('preferred_drink')?.value || '',
+    
+    // Evaluaciones sensoriales
+    general_aroma: document.getElementById('general_aroma')?.value || '3',
+    aroma_intensity: document.getElementById('aroma_intensity')?.value || '3',
+    herbal_notes: document.getElementById('herbal_notes')?.value || '1',
+    first_taste: document.getElementById('first_taste')?.value || '3',
+    sweetness: document.getElementById('sweetness')?.value || '3',
+    aftertaste: document.getElementById('aftertaste')?.value || '3',
+    body: document.getElementById('body')?.value || '3',
+    smoothness: document.getElementById('smoothness')?.value || '3',
+    wood_presence: document.getElementById('wood_presence')?.value || '1',
+    balance: document.getElementById('balance')?.value || '3',
+    
+    // Campos de texto
+    perceived_flavors: document.getElementById('perceived_flavors')?.value || '',
+    reminded_of: document.getElementById('reminded_of')?.value || '',
+    questionnaire_comments: document.getElementById('questionnaire_comments')?.value || '',
+    additional_comments: document.getElementById('additional_comments')?.value || '',
+    
+    // Radio buttons
+    gender: document.querySelector('input[name="gender"]:checked')?.value || '',
+    rum_frequency: document.querySelector('input[name="rum_frequency"]:checked')?.value || '',
+    would_consume_again: document.querySelector('input[name="would_consume_again"]:checked')?.value || '',
+    would_recommend: document.querySelector('input[name="would_recommend"]:checked')?.value || '',
+    
+    // Select
+    price_range: document.getElementById('price_range')?.value || ''
   };
   
   // Usar sessionStorage (funciona en el navegador)
   try {
-    sessionStorage.setItem('ronEvaluationDraft', JSON.stringify(formData));
+    sessionStorage.setItem('rumEvaluationDraft', JSON.stringify(formData));
   } catch (e) {
     console.log('No se pudo guardar el borrador:', e);
   }
@@ -591,33 +715,33 @@ function saveFormData() {
 // Cargar datos guardados del formulario
 function loadFormData() {
   try {
-    const savedData = sessionStorage.getItem('ronEvaluationDraft');
+    const savedData = sessionStorage.getItem('rumEvaluationDraft');
     if (savedData) {
       const formData = JSON.parse(savedData);
       
-      // Restaurar valores de sliders
+      // Restaurar valores de campos de texto
       Object.keys(formData).forEach(key => {
         const element = document.getElementById(key);
-        if (element && element.type === 'range') {
-          element.value = formData[key];
-          element.dispatchEvent(new Event('input'));
-        } else if (element && element.tagName === 'TEXTAREA') {
-          element.value = formData[key];
-        } else if (element && element.tagName === 'SELECT') {
-          element.value = formData[key];
+        if (element) {
+          if (element.type === 'range') {
+            element.value = formData[key];
+            element.dispatchEvent(new Event('input'));
+          } else if (element.tagName === 'TEXTAREA' || element.tagName === 'INPUT' || element.tagName === 'SELECT') {
+            element.value = formData[key];
+          }
         }
       });
       
       // Restaurar valores de radio buttons
-      if (formData.artesanal) {
-        const artesanalRadio = document.querySelector(`input[name="artesanal"][value="${formData.artesanal}"]`);
-        if (artesanalRadio) artesanalRadio.checked = true;
-      }
+      Object.keys(formData).forEach(key => {
+        if (formData[key] && ['gender', 'rum_frequency', 'would_consume_again', 'would_recommend'].includes(key)) {
+          const radio = document.querySelector(`input[name="${key}"][value="${formData[key]}"]`);
+          if (radio) radio.checked = true;
+        }
+      });
       
-      if (formData.habitual) {
-        const habitualRadio = document.querySelector(`input[name="habitual"][value="${formData.habitual}"]`);
-        if (habitualRadio) habitualRadio.checked = true;
-      }
+      // Recalcular puntaje total
+      calculateTotalScore();
     }
   } catch (e) {
     console.log('No se pudo cargar el borrador:', e);
@@ -626,7 +750,7 @@ function loadFormData() {
 
 // Función global para enviar evaluación (mantener compatibilidad)
 function submitEvaluation() {
-  const form = document.getElementById('formulario');
+  const form = document.getElementById('rumEvaluationForm');
   if (form) {
     form.dispatchEvent(new Event('submit'));
   }
