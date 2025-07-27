@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel Administrativo - Ron Entre Ríos Especialistas</title>
+    <link rel="stylesheet" href="admin-stylesPro.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+</head>
+<body>
+    <div class="admin-container">
+        <!-- Header -->
+        <header class="admin-header">
+            <div class="header-content">
+                <div>
+                    <h1>Panel Administrativo - Especialistas</h1>
+                    <p>Análisis detallado de evaluaciones de especialistas en tragos</p>
+                </div>
+                <div class="header-actions">
+                    <button class="refresh-btn" id="refreshBtn">🔄 Actualizar</button>
+                    <button class="export-btn" id="exportBtn">📊 Exportar CSV</button>
+                </div>
+            </div>
+        </header>
+
+        <!-- Loading State -->
+        <div id="loadingState" class="loading-state">
+            <div class="spinner"></div>
+            <h3>Cargando datos...</h3>
+            <p>Obteniendo evaluaciones de especialistas</p>
+        </div>
+
+        <!-- Error State -->
+        <div id="errorState" class="error-state" style="display: none;">
+            <div class="error-icon">⚠️</div>
+            <h3>Error al cargar datos</h3>
+            <p id="errorMessage">Ha ocurrido un error inesperado</p>
+            <button class="retry-btn" onclick="loadData()">Reintentar</button>
+        </div>
+
+        <!-- Dashboard -->
+        <main id="dashboard" class="dashboard" style="display: none;">
+            <!-- Summary Cards -->
+            <section class="summary-section">
+                <div class="summary-card">
+                    <div class="card-icon">📋</div>
+                    <div class="card-content">
+                        <h3 id="totalResponses">0</h3>
+                        <p>Total Evaluaciones</p>
+                    </div>
+                </div>
+                <div class="summary-card">
+                    <div class="card-icon">⭐</div>
+                    <div class="card-content">
+                        <h3 id="avgScore">0.0</h3>
+                        <p>Puntaje Promedio</p>
+                    </div>
+                </div>
+                <div class="summary-card">
+                    <div class="card-icon">📅</div>
+                    <div class="card-content">
+                        <h3 id="todayResponses">0</h3>
+                        <p>Evaluaciones Hoy</p>
+                    </div>
+                </div>
+                <div class="summary-card">
+                    <div class="card-icon">👥</div>
+                    <div class="card-content">
+                        <h3 id="avgAge">0.0</h3>
+                        <p>Edad Promedio</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Charts Section -->
+            <section class="charts-section">
+                <!-- First Row - Aroma and Sabor -->
+                <div class="chart-row">
+                    <div class="chart-container half">
+                        <div class="chart-header">
+                            <h2>Evaluación de Aromas</h2>
+                            <p>Distribución de calificaciones para aspectos aromáticos</p>
+                        </div>
+                        <div class="chart-wrapper">
+                            <canvas id="aromaChart"></canvas>
+                        </div>
+                    </div>
+                    <div class="chart-container half">
+                        <div class="chart-header">
+                            <h2>Perfil de Sabor</h2>
+                            <p>Radar con promedios de evaluación sensorial</p>
+                        </div>
+                        <div class="chart-wrapper">
+                            <canvas id="saborChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Second Row - Perfil and Demographics -->
+                <div class="chart-row">
+                    <div class="chart-container half">
+                        <div class="chart-header">
+                            <h2>Perfil General del Producto</h2>
+                            <p>Presencia de madera y balance general</p>
+                        </div>
+                        <div class="chart-wrapper">
+                            <canvas id="perfilChart"></canvas>
+                        </div>
+                    </div>
+                    <div class="chart-container half">
+                        <div class="chart-header">
+                            <h2>Perfil de Evaluadores</h2>
+                            <p>Distribución demográfica por género</p>
+                        </div>
+                        <div class="chart-wrapper">
+                            <canvas id="demographicChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Third Row - Preferences and Recommendations -->
+                <div class="chart-row">
+                    <div class="chart-container half">
+                        <div class="chart-header">
+                            <h2>Bebidas Preferidas</h2>
+                            <p>Preferencias de bebidas alcohólicas de los especialistas</p>
+                        </div>
+                        <div class="chart-wrapper">
+                            <canvas id="preferenciasChart"></canvas>
+                        </div>
+                    </div>
+                    <div class="chart-container half">
+                        <div class="chart-header">
+                            <h2>Recomendación del Producto</h2>
+                            <p>¿Recomendarían el ron a un amigo?</p>
+                        </div>
+                        <div class="chart-wrapper">
+                            <canvas id="recomendacionChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Fourth Row - Price and Time Series -->
+                <div class="chart-row">
+                    <div class="chart-container half">
+                        <div class="chart-header">
+                            <h2>Expectativa de Precio</h2>
+                            <p>Rango de precio considerado adecuado</p>
+                        </div>
+                        <div class="chart-wrapper">
+                            <canvas id="precioChart"></canvas>
+                        </div>
+                    </div>
+                    <div class="chart-container half">
+                        <div class="chart-header">
+                            <h2>Evaluaciones en el Tiempo</h2>
+                            <p>Tendencia de evaluaciones por fecha</p>
+                        </div>
+                        <div class="chart-wrapper">
+                            <canvas id="timeSeriesChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Data Cards Section (Reemplaza la tabla) -->
+            <section class="data-section">
+                <div class="section-header">
+                    <h2>Evaluaciones Detalladas</h2>
+                    <div class="section-controls">
+                        <input type="text" id="searchInput" class="search-input" placeholder="🔍 Buscar por nombre o notas...">
+                        <select id="filterSelect" class="filter-select">
+                            <option value="all">Todas las evaluaciones</option>
+                            <option value="today">Solo hoy</option>
+                            <option value="week">Última semana</option>
+                            <option value="high-scores">Puntajes altos (35+)</option>
+                        </select>
+                        <button class="view-toggle-btn" id="viewToggleBtn">📋 Vista Tabla</button>
+                    </div>
+                </div>
+
+                <!-- Cards Grid -->
+                <div id="cardsContainer" class="cards-grid">
+                    <!-- Cards will be populated by JavaScript -->
+                </div>
+
+                <!-- Traditional Table (Hidden by default) -->
+                <div id="tableContainer" class="table-container" style="display: none;">
+                    <div class="table-wrapper">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Fecha</th>
+                                    <th>Nombre</th>
+                                    <th>Edad</th>
+                                    <th>Sexo</th>
+                                    <th>Bebida Pref.</th>
+                                    <th>Aroma Gral.</th>
+                                    <th>Int. Aromática</th>
+                                    <th>1er Contacto</th>
+                                    <th>Dulzor</th>
+                                    <th>Retrogusto</th>
+                                    <th>Balance</th>
+                                    <th>Sabores Percibidos</th>
+                                    <th>Consumiría de Nuevo</th>
+                                    <th>Recomendaría</th>
+                                    <th>Puntaje Total</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tableBody">
+                                <!-- Data will be populated by JavaScript -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <!-- Footer -->
+        <footer class="admin-footer">
+            <p>&copy; 2025 Ron Entre Ríos - Panel Administrativo Especialistas</p>
+            <p>Última actualización: <span id="lastUpdate">-</span></p>
+        </footer>
+    </div>
+
+    <script src="admin-scriptPro.js"></script>
+</body>
+</html>
