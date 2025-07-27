@@ -551,6 +551,7 @@ function createAromaChart() {
   });
 }
 
+// Función createSaborChart modificada para incluir leyenda personalizada
 function createSaborChart() {
   const ctx = document.getElementById('saborChart').getContext('2d');
   
@@ -585,11 +586,70 @@ function createSaborChart() {
       maintainAspectRatio: false,
       plugins: {
         legend: {
-          display: false
+          position: 'right',
+          align: 'center',
+          labels: {
+            usePointStyle: true,
+            pointStyle: 'circle',
+            padding: 15,
+            font: {
+              size: 12,
+              weight: '500'
+            },
+            color: '#2C1810',
+            generateLabels: function(chart) {
+              // Crear leyenda personalizada con la escala de evaluación
+              return [
+                {
+                  text: '5 Excelente',
+                  fillStyle: '#28a745',
+                  strokeStyle: '#28a745',
+                  pointStyle: 'circle',
+                  hidden: false
+                },
+                {
+                  text: '4 Muy Bueno', 
+                  fillStyle: '#20c997',
+                  strokeStyle: '#20c997',
+                  pointStyle: 'circle',
+                  hidden: false
+                },
+                {
+                  text: '3 Bueno',
+                  fillStyle: '#ffc107', 
+                  strokeStyle: '#ffc107',
+                  pointStyle: 'circle',
+                  hidden: false
+                },
+                {
+                  text: '2 Regular',
+                  fillStyle: '#fd7e14',
+                  strokeStyle: '#fd7e14', 
+                  pointStyle: 'circle',
+                  hidden: false
+                },
+                {
+                  text: '1 Deficiente',
+                  fillStyle: '#dc3545',
+                  strokeStyle: '#dc3545',
+                  pointStyle: 'circle', 
+                  hidden: false
+                }
+              ];
+            }
+          }
         },
         title: {
           display: true,
-          text: 'Perfil de Sabor Promedio'
+          text: 'Perfil de Sabor Promedio',
+          font: {
+            size: 14,
+            weight: '600'
+          },
+          color: '#2C1810',
+          padding: {
+            bottom: 15
+          }
         }
       },
       scales: {
@@ -599,6 +659,11 @@ function createSaborChart() {
           ticks: {
             stepSize: 1
           }
+        }
+      },
+      layout: {
+        padding: {
+          right: 20
         }
       }
     }
