@@ -236,9 +236,53 @@ function createAverageChart() {
       maintainAspectRatio: false,
       plugins: {
         legend: {
-          display: false
+          display: true,
+          position: 'bottom',
+          labels: {
+            generateLabels: function(chart) {
+              // Crear leyenda personalizada con la escala de evaluación
+              return [
+                {
+                  text: '5 Excelente',
+                  fillStyle: '#28a745',
+                  strokeStyle: '#28a745',
+                  pointStyle: 'circle',
+                  hidden: false
+                },
+                {
+                  text: '4 Muy Bueno', 
+                  fillStyle: '#20c997',
+                  strokeStyle: '#20c997',
+                  pointStyle: 'circle',
+                  hidden: false
+                },
+                {
+                  text: '3 Bueno',
+                  fillStyle: '#ffc107', 
+                  strokeStyle: '#ffc107',
+                  pointStyle: 'circle',
+                  hidden: false
+                },
+                {
+                  text: '2 Regular',
+                  fillStyle: '#fd7e14',
+                  strokeStyle: '#fd7e14', 
+                  pointStyle: 'circle',
+                  hidden: false
+                },
+                {
+                  text: '1 Deficiente',
+                  fillStyle: '#dc3545',
+                  strokeStyle: '#dc3545',
+                  pointStyle: 'circle', 
+                  hidden: false
+                }
+              ];
+            }
+          }
         }
       },
+      
       scales: {
         r: {
           beginAtZero: true,
@@ -267,14 +311,24 @@ function createArtesanalChart() {
     counts[value] = (counts[value] || 0) + 1;
   });
 
+  const total = allData.length;
+  const data = Object.values(counts);
+  const labels = Object.keys(counts);
+
+  const labelsWithData = labels.map((label, index) => {
+    const value = data[index];
+    const percentage = total > 0 ? ((value / total) * 100).toFixed(1) : 0;
+    return `${label}: ${value} (${percentage}%)`;
+  });
+
   if (charts.artesanal) charts.artesanal.destroy();
   
   charts.artesanal = new Chart(ctx, {
     type: 'doughnut',
     data: {
-      labels: Object.keys(counts),
+      labels: labelsWithData,
       datasets: [{
-        data: Object.values(counts),
+        data: data,
         backgroundColor: ['#28a745', '#dc3545', '#6c757d'],
         borderWidth: 2,
         borderColor: '#fff'
@@ -285,7 +339,44 @@ function createArtesanalChart() {
       maintainAspectRatio: false,
       plugins: {
         legend: {
-          position: 'bottom'
+          position: 'right',
+          align: 'center',
+          labels: {
+            usePointStyle: true,
+            pointStyle: 'circle',
+            padding: 15,
+            font: {
+              size: 12,
+              weight: '500'
+            },
+            color: '#2C1810'
+          }
+        },
+        title: {
+          display: true,
+          text: 'Experiencia con Cerveza Artesanal',
+          font: {
+            size: 14,
+            weight: '600'
+          },
+          color: '#2C1810',
+          padding: {
+            bottom: 15
+          }
+        },
+        tooltip: {
+          callbacks: {
+            label: function(context) {
+              const value = context.parsed;
+              const percentage = total > 0 ? ((value / total) * 100).toFixed(1) : 0;
+              return `${labels[context.dataIndex]}: ${value} personas (${percentage}%)`;
+            }
+          }
+        }
+      },
+      layout: {
+        padding: {
+          right: 20
         }
       }
     }
@@ -307,14 +398,24 @@ function createHabitalChart() {
     counts[value] = (counts[value] || 0) + 1;
   });
 
+  const total = allData.length;
+  const data = Object.values(counts);
+  const labels = Object.keys(counts);
+
+  const labelsWithData = labels.map((label, index) => {
+    const value = data[index];
+    const percentage = total > 0 ? ((value / total) * 100).toFixed(1) : 0;
+    return `${label}: ${value} (${percentage}%)`;
+  });
+
   if (charts.habitual) charts.habitual.destroy();
   
   charts.habitual = new Chart(ctx, {
     type: 'doughnut',
     data: {
-      labels: Object.keys(counts),
+      labels: labelsWithData,
       datasets: [{
-        data: Object.values(counts),
+        data: data,
         backgroundColor: ['#17a2b8', '#ffc107', '#6c757d'],
         borderWidth: 2,
         borderColor: '#fff'
@@ -325,13 +426,49 @@ function createHabitalChart() {
       maintainAspectRatio: false,
       plugins: {
         legend: {
-          position: 'bottom'
+          position: 'right',
+          align: 'center',
+          labels: {
+            usePointStyle: true,
+            pointStyle: 'circle',
+            padding: 15,
+            font: {
+              size: 12,
+              weight: '500'
+            },
+            color: '#2C1810'
+          }
+        },
+        title: {
+          display: true,
+          text: 'Consumidores Habituales',
+          font: {
+            size: 14,
+            weight: '600'
+          },
+          color: '#2C1810',
+          padding: {
+            bottom: 15
+          }
+        },
+        tooltip: {
+          callbacks: {
+            label: function(context) {
+              const value = context.parsed;
+              const percentage = total > 0 ? ((value / total) * 100).toFixed(1) : 0;
+              return `${labels[context.dataIndex]}: ${value} personas (${percentage}%)`;
+            }
+          }
+        }
+      },
+      layout: {
+        padding: {
+          right: 20
         }
       }
     }
   });
 }
-
 // Create preferences chart
 function createPreferencesChart() {
   const ctx = document.getElementById('preferencesChart').getContext('2d');
