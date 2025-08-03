@@ -24,7 +24,6 @@ async function loadData() {
   showLoadingState();
   
   try {
-    console.log('Cargando datos desde:', APPS_SCRIPT_URL);
     
     const response = await fetch(APPS_SCRIPT_URL, {
       method: 'GET',
@@ -39,7 +38,7 @@ async function loadData() {
     }
 
     const result = await response.json();
-    console.log('Respuesta recibida:', result);
+    
 
     if (result.status === 'error') {
       throw new Error(result.message || 'Error del servidor');
@@ -52,7 +51,7 @@ async function loadData() {
       allData = [];
     }
 
-    console.log(`Datos cargados: ${allData.length} registros`);
+
     
     updateSummaryCards();
     createCharts();
